@@ -73,7 +73,7 @@ Options:
 
   --help                     Show this message and exit.
 ```
-##Input
+## Input
 
 The `upload` step requires the file `input/mapping.csv` to contain a line entry for every synthetic job.
 The file `input/mapping.csv` contains the following modifiable fields.
@@ -116,17 +116,14 @@ The file `input/mapping.csv` contains the following modifiable fields.
     - HOURS
     - DAYS
 
-##Output
-
+## Output
 Executing `generate` will read all Dynatrace synthetic monitor JSON files from the `input` directory and create corresponding `.py` files in the `output` directory.
 
 Executing `validate` will generate 'report.csv' in the `output` directory containing for each job whether it ran successfully and whether it contains custom code to be hand implemented. 
 
 ## Requirements
-
 - python3
 - chromedriver installed to your PATH
 
 ## Support
-
 Please email bradley.hjelmar@appdynamics.com for any issues.
