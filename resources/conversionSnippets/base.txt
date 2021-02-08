@@ -1,0 +1,28 @@
+# -*- coding: utf-8 -*-
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import Select
+from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoAlertPresentException
+import unittest, time, re
+
+
+class AppDynamicsJob(unittest.TestCase):
+    def setUp(self):
+        self.driver = webdriver.Chrome()
+
+    def test_app_dynamics_job(self):
+        driver = self.driver
+        self.verificationErrors = []
+
+# $EVENT_STEPS
+
+    def tearDown(self):
+        # To know more about the difference between verify and assert,
+        # visit https://www.seleniumhq.org/docs/06_test_design_considerations.jsp#validating-results
+        self.assertEqual([], self.verificationErrors)
+
+
+if __name__ == "__main__":
+    unittest.main()

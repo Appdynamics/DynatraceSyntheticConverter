@@ -1,0 +1,65 @@
+{
+  "id": null,
+  "description": "$syntheticName",
+  "script": {
+    "contentType": "INLINE_PYTHON_3",
+    "script": "$code"
+  },
+  "url": null,
+  "startTimeMillis": null,
+  "endTimeMillis": null,
+  "timeRange": null,
+  "timezone": "UTC",
+  "userEnabled": true,
+  "systemEnabled": true,
+  "browserCodes":
+    $browserCodes
+  ,
+  "locationCodes":
+    $locationCodes
+  ,
+  "version": 0,
+  "timeoutSeconds": $timeoutSeconds,
+  "rate": {
+    "value": $executionRateValue,
+    "unit": "$executionRateUnit"
+  },
+  "daysOfWeek": [],
+  "networkProfile": {
+    "name": "Native",
+    "downloadKbps": 5000,
+    "uploadKbps": 1000,
+    "roundtripTimeMillis": 28,
+    "packetLossPercent": 0,
+    "description": "",
+    "isDefault": false
+  },
+  "appKey": null,
+  "state": null,
+  "scheduleMode": "NONE",
+  "created": null,
+  "updated": null,
+  "failOnPageError": true,
+  "composableConfig": {
+    "resourceErrorDetection": {
+      "ignoreWhen": {
+        "resourceMimeType": [],
+        "resourceUrlContains": []
+      },
+      "onlyWhen": {
+        "resourceMimeType": [],
+        "resourceUrlContains": []
+      },
+      "sessionStatus": null
+    },
+    "deviceEmulationProfile": null,
+    "requestHeader": null
+  },
+  "performanceCriteria": {
+    "retestOnCritical": false,
+    "retestOnWarning": false,
+    "warningCriterion": [],
+    "criticalCriterion": []
+  },
+  "projectedUsage": null
+}
