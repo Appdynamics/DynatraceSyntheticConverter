@@ -56,7 +56,10 @@ def genNavigateCode(event) -> str:
 
 
 def genKeystrokesCode(event):
-    selector = event['target']['locators'][0]['value']
+    # next event target locator where the type is css and value contains a #, else grab the firtst one
+    locators = event['target']['locators']
+    locator = next((locator for locator in locators if locator['type'] == 'css' and '#' in locator['value']), locators[0])
+    selector = locator['value'].replace("\"", "\\\"")
     keys = event['textValue']
     description = event['description']
     code = open('resources/conversionSnippets/keystrokes.txt').read() \
@@ -67,7 +70,10 @@ def genKeystrokesCode(event):
 
 
 def genClickCode(event):
-    selector = event['target']['locators'][0]['value']
+    locators = event['target']['locators']
+    locator = next((locator for locator in locators if locator['type'] == 'css' and '#' in locator['value']),
+                   locators[0])
+    selector = locator['value'].replace("\"", "\\\"")
     description = event['description']
     code = open('resources/conversionSnippets/click.txt').read() \
         .replace('$CSS_SELECTOR', selector) \

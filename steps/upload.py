@@ -40,7 +40,7 @@ def uploadScripts(
 
     # pre-load our jobs uploaded to AppD
     if overwrite:
-        response = controllerService.get_synthetic_jobs('1255')
+        response = controllerService.get_synthetic_jobs('918')
         if response.error is not None:
             logging.error(response.error)
             return
