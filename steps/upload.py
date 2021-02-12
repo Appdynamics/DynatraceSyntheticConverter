@@ -38,14 +38,6 @@ def uploadScripts(
             report = [{k: str(v) for k, v in row.items()}
                       for row in csv.DictReader(f, skipinitialspace=True)]
 
-    # pre-load our jobs uploaded to AppD
-    if overwrite:
-        response = controllerService.get_synthetic_jobs('918')
-        if response.error is not None:
-            logging.error(response.error)
-            return
-        uploadedJobs = response.data['jobListDatas']
-
     for file in glob.iglob('output/*.py'):
         filename = Path(file).stem
 
@@ -59,6 +51,12 @@ def uploadScripts(
             code = open(file).read()
             jobMap = next(mapping for mapping in allMappings if mapping['jobName'] == filename)
             if overwrite:
+                response = controllerService.get_synthetic_jobs(jobMap['eumApplicationId'])
+                if response.error is not None:
+                    logging.error(response.error)
+                    return
+                uploadedJobs = response.data['jobListDatas']
+
                 uploadedJob = next((job for job in uploadedJobs if job['config']['description'] == filename), None)
                 if uploadedJob is not None:
                     response = controllerService.overwrite_synthetic_job(jobMap, filename, code, uploadedJob)

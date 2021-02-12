@@ -1,4 +1,5 @@
 import os
+import re
 
 import js2py
 import glob
@@ -58,12 +59,11 @@ def genNavigateCode(event) -> str:
 def genKeystrokesCode(event):
     # next event target locator where the type is css and value contains a #, else grab the firtst one
     locators = event['target']['locators']
-    locator = next((locator for locator in locators if locator['type'] == 'css' and '#' in locator['value']), locators[0])
-    selector = locator['value'].replace("\"", "\\\"")
+    selector = selectorFromLocators(locators)
     keys = event['textValue']
     description = event['description']
     code = open('resources/conversionSnippets/keystrokes.txt').read() \
-        .replace('$CSS_SELECTOR', selector) \
+        .replace('$SELECTOR', selector) \
         .replace('$KEYS', keys) \
         .replace('$DESCRIPTION', description)
     return code
@@ -71,14 +71,30 @@ def genKeystrokesCode(event):
 
 def genClickCode(event):
     locators = event['target']['locators']
-    locator = next((locator for locator in locators if locator['type'] == 'css' and '#' in locator['value']),
-                   locators[0])
-    selector = locator['value'].replace("\"", "\\\"")
+    selector = selectorFromLocators(locators)
     description = event['description']
     code = open('resources/conversionSnippets/click.txt').read() \
-        .replace('$CSS_SELECTOR', selector) \
+        .replace('$SELECTOR', selector) \
         .replace('$DESCRIPTION', description)
     return code
+
+
+def selectorFromLocators(locators):
+    cssIdLocator = \
+        next((locator for locator in locators if locator['type'] == 'css' and '#' in locator['value']), None)
+    if cssIdLocator is not None:
+        cssID = cssIdLocator['value'].replace("\"", "\\\"")
+        return f'driver.find_element_by_css_selector("{cssID}")'
+
+    cssContainsLocator = \
+        next((locator for locator in locators if locator['type'] == 'css' and 'contains' in locator['value']), None)
+    if cssContainsLocator is not None:
+        val = cssContainsLocator['value']
+        content = re.search(r'\((.*)\)', val).group(1).replace("\"", "\\\"")
+        tag = val.split(':')[0]
+        return f'driver.find_element_by_xpath("//{tag}[contains(text(), {content})]")'
+
+    return locators[0]['value'].replace("\"", "\\\"")
 
 
 def genJsToPythonCode(event):

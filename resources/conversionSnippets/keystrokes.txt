@@ -1,5 +1,5 @@
         # $DESCRIPTION
-        element = driver.find_element_by_css_selector("$CSS_SELECTOR")
+        element = $SELECTOR
         element.click()
         element.clear()
         element.send_keys("$KEYS")
