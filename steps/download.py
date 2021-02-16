@@ -4,10 +4,6 @@ import logging
 from dyna_api.dyna_service import DynatraceService
 
 
-class Path(object):
-    pass
-
-
 def downloadScripts(url: str, token: str):
     dynatraceService = DynatraceService(url, token)
     monitors = dynatraceService.get_synthetic_monitors()
