@@ -7,7 +7,6 @@ verify_ssl = true
 
 [packages]
 selenium = "*"
-js2py = "*"
 marshmallow = "*"
 requests = "*"
 uplink = "*"

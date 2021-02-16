@@ -1,7 +1,6 @@
 import os
 import re
 
-import js2py
 import glob
 import json
 from pathlib import Path
