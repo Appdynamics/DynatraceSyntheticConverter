@@ -1,4 +1,5 @@
         # $DESCRIPTION
+        print('$DESCRIPTION')
         element = $SELECTOR
         element.click()
         element.clear()

@@ -6,7 +6,7 @@ This project aims to provide a CLI for downloading, generating, validating, and 
 
 DynatraceSyntheticConverter can be invoked with the command `python3 DynatraceSyntheticConverter.py`
 ```
-Usage: dynatraceSyntheticConverter.py [OPTIONS] COMMAND [ARGS]...
+Usage: DynatraceSyntheticConverter.py [OPTIONS] COMMAND [ARGS]...
 
   DT synthetic commands
 
@@ -14,6 +14,7 @@ Options:
   --help  Show this message and exit.
 
 Commands:
+  download  Download all synthetic monitors from Dynatrace.
   generate  Generate python scripts from Dynatrace synthetic monitor JSON.
   upload    Upload generated scripts to AppD.
   validate  Validates generated scripts by running them locally.
@@ -22,10 +23,23 @@ Commands:
 
 
 It is advised to execute the script with commands in the following order:
-1. generate
-2. validate
-3. upload
+1. download
+2. generate
+3. validate
+4. upload
 
+Download
+```
+Usage: DynatraceSyntheticConverter.py download [OPTIONS]
+
+  Download all synthetic monitors from Dynatrace. Downloaded scripts are
+  placed in the input directory.
+
+Options:
+  --url TEXT    acme.live.dynatrace.com
+  --token TEXT
+  --help        Show this message and exit.
+```
 Generate
 ```
 Usage: dynatraceSyntheticConverter.py generate [OPTIONS]

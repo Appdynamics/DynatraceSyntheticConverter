@@ -1,5 +1,6 @@
 import logging
 
+from steps.download import downloadScripts
 from steps.generate import generateScripts
 from steps.upload import uploadScripts
 from steps.validate import validateScripts
@@ -11,6 +12,24 @@ from util.logging import initLogging
 def DynatraceSyntheticConverter():
     """DT synthetic commands"""
     pass
+
+
+@DynatraceSyntheticConverter.command(
+    name='download',
+    help='''
+    Download all synthetic monitors from Dynatrace.
+    Downloaded scripts are placed in the input directory.  
+    ''')
+@click.option(
+    '--url',
+    prompt=True,
+    help='acme.live.dynatrace.com')
+@click.option(
+    '--token',
+    prompt=True)
+def generate_cmd(url: str, token: str):
+    logging.info(f'-----Launching download step-----')
+    downloadScripts(url, token)
 
 
 @DynatraceSyntheticConverter.command(

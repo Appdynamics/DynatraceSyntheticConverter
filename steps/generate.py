@@ -57,7 +57,7 @@ def genNavigateCode(event) -> str:
 
 
 def genKeystrokesCode(event):
-    # next event target locator where the type is css and value contains a #, else grab the firtst one
+    # next event target locator where the type is css and value contains a #, else grab the first one
     locators = event['target']['locators']
     selector = selectorFromLocators(locators)
     keys = event['textValue']
@@ -94,20 +94,20 @@ def selectorFromLocators(locators):
         tag = val.split(':')[0]
         return f'driver.find_element_by_xpath("//{tag}[contains(text(), {content})]")'
 
+    cssDomNameLocator = \
+        next((locator for locator in locators if locator['type'] == 'dom' and 'getElementsByName' in locator['value']),
+             None)
+    if cssDomNameLocator is not None:
+        val = cssDomNameLocator['value']
+        content = re.search(r'\((.*)\)', val).group(1).replace("\"", "\\\"")
+        return f'driver.find_element_by_name("Submit")'
+
     return locators[0]['value'].replace("\"", "\\\"")
 
 
 def genJsToPythonCode(event):
     description = event['description']
-    # this works but not really
-    # with open(f'output/jsGen/tmp.js', 'w') as outfile:
-    #     strippedJS = "".join([s for s in event['javaScript'].strip().splitlines(True) if s.strip()])
-    #     outfile.write(strippedJS)
-    # js2py.translate_file('output/jsGen/tmp.js', 'output/jsGen/tmp.py')
-    # pythonCode = open('output/jsGen/tmp.py').read() \
-    #         .replace('\n', '\n        ')
-    pythonCode = '# TODO: Implement by hand'
-    code = open('resources/conversionSnippets/pythonCode.txt').read() \
+    code = open('resources/conversionSnippets/jsCode.txt').read() \
         .replace('$DESCRIPTION', description) \
-        .replace('$PYTHON_CODE', pythonCode)
+        .replace('$JS_CODE', event['javaScript'].replace('\n', '\t\t'))
     return code
