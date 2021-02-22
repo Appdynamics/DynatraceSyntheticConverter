@@ -41,8 +41,8 @@ def generate():
                     eventsCode += __genClickCode(event)
                 elif event['type'] == 'javascript':
                     eventsCode += __genJsCode(event)
-                elif event['type'] == 'select':
-                    # TODO: not yet implemented
+                elif event['type'] == 'selectOption':
+                    eventsCode += __genSelectOptionCode(event)
                     pass
                 else:
                     hasUnsupportedElements = True
@@ -92,6 +92,19 @@ def __genClickCode(event):
     return code
 
 
+def __genSelectOptionCode(event):
+    locators = event['target']['locators']
+    selector = __selectorFromLocators(locators)
+    description = event['description']
+    selections = event['selections'][0]['index']  # TODO: this'll not work for multi selects
+    code = open('DynatraceSyntheticConverter/resources/conversionSnippets/selectOption.txt').read() \
+        .replace('$SELECTOR', selector) \
+        .replace('$DESCRIPTION', description) \
+        .replace('$INDEX', str(selections))
+    return code
+    pass
+
+
 def __selectorFromLocators(locators):
     cssIdLocator = \
         next((locator for locator in locators if locator['type'] == 'css' and '#' in locator['value']), None)
@@ -112,10 +125,10 @@ def __selectorFromLocators(locators):
              None)
     if cssDomNameLocator is not None:
         val = cssDomNameLocator['value']
-        content = re.search(r'\((.*)\)', val).group(1).replace("\"", "\\\"")
+        content = re.search(r'\((.*)\)', val).group(1)
         return f'driver.find_element_by_name({content})'
 
-    return locators[0]['value'].replace("\"", "\\\"")
+    return 'None  # TODO: locator found is ' + locators[0]["value"].replace("\"", "\\\"")
 
 
 def __genJsCode(event):

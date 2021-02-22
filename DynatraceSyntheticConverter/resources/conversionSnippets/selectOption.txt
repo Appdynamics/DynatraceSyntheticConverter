@@ -1,0 +1,6 @@
+        # $DESCRIPTION
+        print('$DESCRIPTION')
+        element = $SELECTOR
+        driver.execute_script("arguments[0].scrollIntoView();", element)
+        driver.execute_script("arguments[0].click();", element)
+        Select(element).select_by_index($INDEX)

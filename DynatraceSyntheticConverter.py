@@ -12,6 +12,7 @@ from DynatraceSyntheticConverter.util.logging_utils import initLogging
 def main():
     pass
 
+
 if __name__ == '__main__':
     """
     Automate the generation of AppDynamics synthetic scripts from Dynatrace synthetic monitor script output.
