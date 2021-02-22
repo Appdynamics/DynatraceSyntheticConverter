@@ -4,20 +4,69 @@ import json
 import logging
 from pathlib import Path
 
-from appd_api.appd_service import AppDService
+from click import command, option, password_option
+
+from DynatraceSyntheticConverter.api.appd.appd_service import AppDService
+from DynatraceSyntheticConverter.util.click_utils import DynamicOptionPrompt, parse_port_number_from_host, parse_is_ssl_from_host, parse_account_from_host
 
 
-def uploadScripts(
+@command(
+    name='upload',
+    help='''
+    Upload generated scripts to AppD.
+    If only-useful-scripts is chosen, only scripts from the output/report.csv which ranSuccessfully will be uploaded. 
+    ''')
+@option(
+    '--host',
+    prompt=True,
+    help='acme.saas.appdynamics.com')
+@option(
+    '--port',
+    prompt=True,
+    cls=DynamicOptionPrompt,
+    default_option='host',
+    default=lambda x: parse_port_number_from_host(x),
+    help="SaaS: 443\nOn Prem: 8090")
+@option(
+    '--ssl/--no-ssl',
+    prompt=True,
+    is_flag=True,
+    cls=DynamicOptionPrompt,
+    default_option='host',
+    default=lambda x: parse_is_ssl_from_host(x))
+@option(
+    '--account',
+    prompt=True,
+    cls=DynamicOptionPrompt,
+    default_option='host',
+    default=lambda x: parse_account_from_host(x),
+    help="SaaS: first segment of controller host\nOn Prem: customer1")
+@option(
+    '--username',
+    prompt=True,
+    help='must use local account')
+@password_option()
+@option(
+    '--only-successful-scripts',
+    help="Only scripts from the output/report.csv which ranSuccessfully will be uploaded.",
+    is_flag=True)
+@option(
+    '--overwrite',
+    help="Overwrite scripts on destination controller with the same name.",
+    is_flag=True)
+def upload(
         host: str,
         port: int,
         ssl: bool,
-        accountname: str,
+        account: str,
         username: str,
-        pwd: str,
+        password: str,
         only_successful_scripts: bool,
         overwrite: bool
 ):
-    controllerService = AppDService(host, port, ssl, accountname, username, pwd)
+    logging.info(f'-----Launching upload step-----')
+
+    controllerService = AppDService(host, port, ssl, account, username, password)
     if controllerService.login_to_controller().error is not None:
         return
 
@@ -69,6 +118,6 @@ def uploadScripts(
             elif response.error.msg == 'Already Exists':
                 logging.info(f'Synthetic script {filename} already exists. You can optionally run with --overwrite.')
             else:
-                logging.error(f'Failed to upload synthetic script {filename} with status code {response.error}')
+                logging.error(f'Failed to upload synthetic script {filename} with error: {response.error}')
         else:
             logging.info(f'Only uploading validated scripts, skipping {filename}')

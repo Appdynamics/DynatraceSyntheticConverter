@@ -12,6 +12,11 @@ requests = "*"
 uplink = "*"
 marshmallow-dataclass = "*"
 click = "*"
+pytest = "*"
+mock = "*"
+pytest-mock = "*"
+responses = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.7"

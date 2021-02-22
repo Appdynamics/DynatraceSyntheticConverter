@@ -1,27 +1,10 @@
 import json
 import logging
-import re
-import sys
-from dataclasses import dataclass
-from typing import Any
 
-from uplink import Body
 from uplink.auth import ApiTokenHeader
 
-from appd_api.appd_controller import AppdController
-from dyna_api.dyna_controller import DynatraceController
-
-
-@dataclass
-class Result:
-    """Basic implementation of  'Go-like' error handling"""
-
-    @dataclass
-    class Error:
-        msg: str
-
-    data: Any
-    error: Error
+from DynatraceSyntheticConverter.api.Result import Result
+from DynatraceSyntheticConverter.api.dynatrace.dynatrace_controller import DynatraceController
 
 
 class DynatraceService:

@@ -1,15 +1,26 @@
 import os
 import re
 
+from click import command
+
 import glob
 import json
 from pathlib import Path
 import logging
 
 
-def generateScripts():
+@command(
+    name='generate',
+    help='''
+    Generate python scripts from Dynatrace synthetic monitor JSON.
+    Generated scripts are placed in the output directory and will overwrite existing scripts of the same name.  
+    ''')
+def generate():
+    logging.info(f'-----Launching generate step-----')
+
     if not os.path.exists('output'):
         os.makedirs('output')
+
     for file in glob.iglob('input/*.json'):
         filename = Path(file).stem
         schema = json.loads(open(file).read())
@@ -17,19 +28,22 @@ def generateScripts():
             logging.info(f'Converting {filename}')
 
             events = schema['events']
-            code = open('resources/conversionSnippets/base.txt').read()
+            code = open('DynatraceSyntheticConverter/resources/conversionSnippets/base.txt').read()
             eventsCode = ''
 
             hasUnsupportedElements = False
             for event in events:
                 if event['type'] == 'navigate':
-                    eventsCode += genNavigateCode(event)
+                    eventsCode += __genNavigateCode(event)
                 elif event['type'] == 'keystrokes':
-                    eventsCode += genKeystrokesCode(event)
+                    eventsCode += __genKeystrokesCode(event)
                 elif event['type'] == 'click':
-                    eventsCode += genClickCode(event)
+                    eventsCode += __genClickCode(event)
                 elif event['type'] == 'javascript':
-                    eventsCode += genJsToPythonCode(event)
+                    eventsCode += __genJsCode(event)
+                elif event['type'] == 'select':
+                    # TODO: not yet implemented
+                    pass
                 else:
                     hasUnsupportedElements = True
                     logging.debug(f'{event["type"]} is not yet supported')
@@ -46,39 +60,39 @@ def generateScripts():
             logging.error(f'Schema type {schema["type"]} for {filename} is not supported. Skipping...')
 
 
-def genNavigateCode(event) -> str:
+def __genNavigateCode(event) -> str:
     url = event['url']
     description = event['description']
-    code = open('resources/conversionSnippets/navigate.txt').read() \
+    code = open('DynatraceSyntheticConverter/resources/conversionSnippets/navigate.txt').read() \
         .replace('$URL', url) \
         .replace('$DESCRIPTION', description)
     return code
 
 
-def genKeystrokesCode(event):
+def __genKeystrokesCode(event):
     # next event target locator where the type is css and value contains a #, else grab the first one
     locators = event['target']['locators']
-    selector = selectorFromLocators(locators)
+    selector = __selectorFromLocators(locators)
     keys = event['textValue']
     description = event['description']
-    code = open('resources/conversionSnippets/keystrokes.txt').read() \
+    code = open('DynatraceSyntheticConverter/resources/conversionSnippets/keystrokes.txt').read() \
         .replace('$SELECTOR', selector) \
         .replace('$KEYS', keys) \
         .replace('$DESCRIPTION', description)
     return code
 
 
-def genClickCode(event):
+def __genClickCode(event):
     locators = event['target']['locators']
-    selector = selectorFromLocators(locators)
+    selector = __selectorFromLocators(locators)
     description = event['description']
-    code = open('resources/conversionSnippets/click.txt').read() \
+    code = open('DynatraceSyntheticConverter/resources/conversionSnippets/click.txt').read() \
         .replace('$SELECTOR', selector) \
         .replace('$DESCRIPTION', description)
     return code
 
 
-def selectorFromLocators(locators):
+def __selectorFromLocators(locators):
     cssIdLocator = \
         next((locator for locator in locators if locator['type'] == 'css' and '#' in locator['value']), None)
     if cssIdLocator is not None:
@@ -99,14 +113,14 @@ def selectorFromLocators(locators):
     if cssDomNameLocator is not None:
         val = cssDomNameLocator['value']
         content = re.search(r'\((.*)\)', val).group(1).replace("\"", "\\\"")
-        return f'driver.find_element_by_name("Submit")'
+        return f'driver.find_element_by_name({content})'
 
     return locators[0]['value'].replace("\"", "\\\"")
 
 
-def genJsToPythonCode(event):
+def __genJsCode(event):
     description = event['description']
-    code = open('resources/conversionSnippets/jsCode.txt').read() \
+    code = open('DynatraceSyntheticConverter/resources/conversionSnippets/jsCode.txt').read() \
         .replace('$DESCRIPTION', description) \
         .replace('$JS_CODE', event['javaScript'].replace('\n', '\t\t'))
     return code

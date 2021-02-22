@@ -13,8 +13,8 @@ def raise_api_error(exc_type, exc_val, exc_tb):
 @error_handler(raise_api_error)
 class AppdController(Consumer):
     """Minimal python client for the AppDynamics API"""
-    jsessionid: str
-    xcsrftoken: str
+    jsessionid: str = None
+    xcsrftoken: str = None
 
     @params({"action": "login"})
     @get("/controller/auth")

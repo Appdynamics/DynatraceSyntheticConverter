@@ -18,9 +18,9 @@ class DynatraceController(Consumer):
     @params({"output": "json"})
     @get("/api/v1/synthetic/monitors")
     def get_synthetic_monitors(self):
-        """Retrieves all applications"""
+        """Retrieves all synthetic monitors"""
 
     @params({"output": "json"})
     @get("/api/v1/synthetic/monitors/{monitorId}")
     def get_synthetic_monitor(self, monitorId: Path):
-        """Retrieves all applications"""
+        """Retrieves info on specific synthetic monitor"""

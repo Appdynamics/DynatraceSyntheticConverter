@@ -2,19 +2,36 @@ import json
 import logging
 import os
 
-from dyna_api.dyna_service import DynatraceService
+from click import command, option
+
+from DynatraceSyntheticConverter.api.dynatrace.dynatrace_service import DynatraceService
 
 
-def downloadScripts(url: str, token: str):
+@command(
+    name='download',
+    help='''
+    Download all synthetic monitors from Dynatrace.
+    Downloaded scripts are placed in the input directory.  
+    ''')
+@option(
+    '--url',
+    prompt=True,
+    help='acme.live.dynatrace.com')
+@option(
+    '--token',
+    prompt=True)
+def download(url: str, token: str):
+    logging.info(f'-----Launching download step-----')
+
     dynatraceService = DynatraceService(url, token)
     monitors = dynatraceService.get_synthetic_monitors()
+    if monitors.error is not None:
+        logging.error(monitors.error.msg)
+        return
 
     if not os.path.exists('input'):
         os.makedirs('input')
 
-    if monitors.error is not None:
-        logging.error(monitors.error.msg)
-        return
     for monitorBase in monitors.data['monitors']:
         monitor = dynatraceService.get_synthetic_monitor(monitorBase['entityId'])
         if monitor.error is not None:

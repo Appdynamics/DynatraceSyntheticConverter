@@ -1,25 +1,9 @@
 import json
 import logging
 import re
-import sys
-from dataclasses import dataclass
-from typing import Any
 
-from uplink import Body
-
-from appd_api.appd_controller import AppdController
-
-
-@dataclass
-class Result:
-    """Basic implementation of  'Go-like' error handling"""
-
-    @dataclass
-    class Error:
-        msg: str
-
-    data: Any
-    error: Error
+from DynatraceSyntheticConverter.api.Result import Result
+from DynatraceSyntheticConverter.api.appd.appd_controller import AppdController
 
 
 class AppDService:
@@ -30,37 +14,36 @@ class AppDService:
             host: str,
             port: int,
             ssl: bool,
-            accountname: str,
+            account: str,
             username: str,
             pwd: str):
         logging.debug(f'Initializing controller service for {host}')
         connection_url = f'{"https" if ssl else "http"}://{host}:{port}'
-        auth = (f'{username}@{accountname}', pwd)
+        auth = (f'{username}@{account}', pwd)
         self.controller = AppdController(base_url=connection_url, auth=auth)
 
     def login_to_controller(self) -> Result:
         logging.debug("Attempt controller connection.")
         response = self.controller.login()
-        if response.status_code is not 200:
+        if response.status_code != 200:
             logging.error(f'Controller login failed with {response.status_code}')
-            return Result(response, Result.Error(f'Controller login failed with {response.status_code}'))
-
+            return Result(response, Result.Error(f'Controller login failed with {response.status_code}.'))
         try:
-            jsessionid = re.search('JSESSIONID=(\\w|\\d)*', response.headers['Set-Cookie']) \
-                .group(0).split('JSESSIONID=')[1]
+            jsessionid = re.search('JSESSIONID=(\\w|\\d)*', response.headers['Set-Cookie']).group(0).split('JSESSIONID=')[1]
             self.controller.jsessionid = jsessionid
         except AttributeError:
-            logging.debug("JSESSIONID not returned, already logged in with valid credentials.")
+            logging.debug('Valid authentication headers not cached from previous login call. Please verify credentials.')
         try:
-            xcsrftoken = re.search('X-CSRF-TOKEN=(\\w|\\d)*', response.headers['Set-Cookie']) \
-                .group(0).split('X-CSRF-TOKEN=')[1]
+            xcsrftoken = re.search('X-CSRF-TOKEN=(\\w|\\d)*', response.headers['Set-Cookie']).group(0).split('X-CSRF-TOKEN=')[1]
             self.controller.xcsrftoken = xcsrftoken
         except AttributeError:
-            logging.debug("X-CSRF-TOKEN not returned, already logged in with valid credentials.")
+            logging.debug('Valid authentication headers not cached from previous login call. Please verify credentials.')
+
+        if self.controller.jsessionid is None or self.controller.xcsrftoken is None:
+            return Result(response, Result.Error(f'Valid authentication headers not cached from previous login call. Please verify credentials.'))
 
         self.controller.session.headers['X-CSRF-TOKEN'] = self.controller.xcsrftoken
-        self.controller.session.headers[
-            "Set-Cookie"] = f"JSESSIONID={self.controller.jsessionid};X-CSRF-TOKEN={self.controller.xcsrftoken};"
+        self.controller.session.headers["Set-Cookie"] = f"JSESSIONID={self.controller.jsessionid};X-CSRF-TOKEN={self.controller.xcsrftoken};"
         self.controller.session.headers['Content-Type'] = 'application/json;charset=UTF-8'
 
         logging.debug(f'Controller initialization successful.')
@@ -74,11 +57,14 @@ class AppDService:
 
     def create_synthetic_job(self, jobMap, synthetic_name: str, code: str) -> Result:
         logging.debug(f'Creating synthetic job {synthetic_name} for application {jobMap["eumApplicationId"]}')
-        self.login_to_controller()
-        code = code\
+        response = self.login_to_controller()
+        if response.error is not None:
+            return Result(None, Result.Error(response.error.msg))
+
+        code = code \
             .encode("unicode_escape").decode("utf-8") \
             .replace("\"", "\\\"")
-        body = open("resources/appd\syntheticPayload.json") \
+        body = open("DynatraceSyntheticConverter/resources/appd/syntheticPayload.json") \
             .read() \
             .replace("$code", str(code)) \
             .replace("$syntheticName", str(synthetic_name)) \
@@ -98,7 +84,9 @@ class AppDService:
 
     def overwrite_synthetic_job(self, jobMap, synthetic_name: str, code: str, uploadedJob) -> Result:
         logging.debug(f'Creating synthetic job {synthetic_name} for application {jobMap["eumApplicationId"]}')
-        self.login_to_controller()
+        response = self.login_to_controller()
+        if response.error is not None:
+            return Result(None, Result.Error(response.error.msg))
 
         uploadedJob['config']['script']['script'] = code
         uploadedJob['config']['browserCodes'] = jobMap["browserCodes"].split(",")
@@ -113,7 +101,10 @@ class AppDService:
 
     def get_synthetic_jobs(self, eumApplicationId: str) -> Result:
         logging.debug(f'Getting synthetic jobs for application {eumApplicationId}')
-        self.login_to_controller()
+        response = self.login_to_controller()
+        if response.error is not None:
+            return Result(None, Result.Error(response.error.msg))
+
         response = self.controller.get_synthetic_jobs(eumApplicationId)
         error = None if response.status_code == 200 else Result.Error(response.status_code)
         return Result(json.loads(response.content), error)
