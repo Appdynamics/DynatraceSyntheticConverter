@@ -135,8 +135,13 @@ Executing `generate` will read all Dynatrace synthetic monitor JSON files from t
 
 Executing `validate` will generate 'report.csv' in the `output` directory containing for each job whether it ran successfully and whether it contains custom code to be hand implemented. 
 
+## Installation
+1. Install dependencies with `pipenv install`.
+2. Activate the pipenv shell `pipenv shell`.
+
 ## Requirements
-- python3
+- python3.5
+- pipenv
 - chromedriver installed to your PATH
 
 ## Support
