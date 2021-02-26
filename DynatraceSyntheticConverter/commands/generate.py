@@ -107,7 +107,7 @@ def __genSelectOptionCode(event):
 
 def __selectorFromLocators(locators):
     cssIdLocator = \
-        next((locator for locator in locators if locator['type'] == 'css' and '#' in locator['value']), None)
+        next((locator for locator in locators if locator['type'] == 'css' and 'contains' not in locator['value']), None)
     if cssIdLocator is not None:
         cssID = cssIdLocator['value'].replace("\"", "\\\"")
         return f'driver.find_element_by_css_selector("{cssID}")'

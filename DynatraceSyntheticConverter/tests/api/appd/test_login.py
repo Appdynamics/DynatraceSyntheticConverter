@@ -45,7 +45,7 @@ def test_no_xcsrftoken():
 
     assert result.error.msg == 'Valid authentication headers not cached from previous login call. Please verify credentials.'
     assert controllerService.controller.jsessionid == 'foo'
-    assert controllerService.controller.xcsrftoken == None
+    assert controllerService.controller.xcsrftoken is None
 
 
 @responses.activate
