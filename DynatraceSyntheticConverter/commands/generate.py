@@ -43,10 +43,11 @@ def generate():
                     eventsCode += __genJsCode(event)
                 elif event['type'] == 'selectOption':
                     eventsCode += __genSelectOptionCode(event)
-                    pass
                 else:
                     hasUnsupportedElements = True
                     logging.debug(f'{event["type"]} is not yet supported')
+                if 'validate' in event:
+                    eventsCode += __genTextMatchCode(event)
 
             if hasUnsupportedElements:
                 logging.info(f'{filename} not fully converted, contains unsupported elements')
@@ -102,7 +103,17 @@ def __genSelectOptionCode(event):
         .replace('$DESCRIPTION', description) \
         .replace('$INDEX', str(selections))
     return code
-    pass
+
+
+def __genTextMatchCode(event):
+    code = ""
+    for validator in event['validate']:
+        if validator['failIfFound']:
+            code += open('DynatraceSyntheticConverter/resources/conversionSnippets/textMatchFailIfFound.txt').read()
+        else:
+            code += open('DynatraceSyntheticConverter/resources/conversionSnippets/textMatchFailIfNotFound.txt').read()
+        code = code.replace('$TEXT', validator['match'])
+    return code
 
 
 def __selectorFromLocators(locators):

@@ -1,0 +1,5 @@
+        print(f'Verifying "$TEXT" is contained in page.')
+        time.sleep(1)
+        text = driver.find_element_by_tag_name('body').text
+        text_found = re.search('$TEXT', text)
+        self.assertNotEqual(text_found, None)
