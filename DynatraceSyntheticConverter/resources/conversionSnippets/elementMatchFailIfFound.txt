@@ -1,0 +1,4 @@
+        print(f'Verifying "$SELECTOR" exists.')
+        time.sleep(1)
+        element = $SELECTOR
+        self.assertEqual(element, None)

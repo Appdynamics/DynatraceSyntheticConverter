@@ -108,11 +108,23 @@ def __genSelectOptionCode(event):
 def __genTextMatchCode(event):
     code = ""
     for validator in event['validate']:
-        if validator['failIfFound']:
-            code += open('DynatraceSyntheticConverter/resources/conversionSnippets/textMatchFailIfFound.txt').read()
-        else:
-            code += open('DynatraceSyntheticConverter/resources/conversionSnippets/textMatchFailIfNotFound.txt').read()
-        code = code.replace('$TEXT', validator['match'])
+        if validator['type'] == 'content_match' or validator['type'] == 'text_match':
+            if validator['failIfFound']:
+                code += open('DynatraceSyntheticConverter/resources/conversionSnippets/textMatchFailIfFound.txt').read()
+            else:
+                code += open(
+                    'DynatraceSyntheticConverter/resources/conversionSnippets/textMatchFailIfNotFound.txt').read()
+            code = code.replace('$TEXT', validator['match'])
+        if validator['type'] == 'element_match':
+            locators = validator['target']['locators']
+            selector = __selectorFromLocators(locators)
+            if validator['failIfFound']:
+                code += open(
+                    'DynatraceSyntheticConverter/resources/conversionSnippets/elementMatchFailIfFound.txt').read()
+            else:
+                code += open(
+                    'DynatraceSyntheticConverter/resources/conversionSnippets/elementMatchFailIfNotFound.txt').read()
+            code = code.replace('$SELECTOR', selector)
     return code
 
 

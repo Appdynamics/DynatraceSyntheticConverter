@@ -1,5 +1,5 @@
-        print(f'Verifying "$TEXT" is contained in page.')
+        print(f'Verifying {"$TEXT".lower()} is not contained in page.')
         time.sleep(1)
-        text = driver.find_element_by_tag_name('body').text
-        text_found = re.search('$TEXT', text)
+        text = driver.find_element_by_tag_name('body').text.lower()
+        text_found = re.search('$TEXT'.lower(), text)
         self.assertEqual(text_found, None)

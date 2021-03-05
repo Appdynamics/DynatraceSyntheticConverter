@@ -20,6 +20,7 @@ class AppDynamicsJob(unittest.TestCase):
 
     def test_app_dynamics_job(self):
         driver = self.driver
+        driver.set_window_size(1920, 1080)
         self.verificationErrors = []
 
 # $EVENT_STEPS
