@@ -1,4 +1,4 @@
-        print(f'Verifying "$SELECTOR" exists.')
-        time.sleep(1)
-        element = $SELECTOR
+        print(f'Verifying "$SELECTOR_STRING" does not exist.')
+        driver_wait.until(EC.visibility_of_element_located(($SELECTOR_TYPE, "$SELECTOR_STRING")))
+        element = $SELECTOR_CODE
         self.assertEqual(element, None)

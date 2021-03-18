@@ -8,6 +8,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support import wait
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
 import unittest, time, re
@@ -16,10 +19,11 @@ import unittest, time, re
 class AppDynamicsJob(unittest.TestCase):
     def setUp(self):
         self.driver = webdriver.Chrome()
-        self.driver.implicitly_wait(5)
+        self.driver.implicitly_wait(30)
 
     def test_app_dynamics_job(self):
         driver = self.driver
+        driver_wait = WebDriverWait(driver, 30)
         driver.set_window_size(1920, 1080)
         self.verificationErrors = []
 

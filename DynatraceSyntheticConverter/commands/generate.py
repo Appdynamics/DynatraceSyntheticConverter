@@ -77,7 +77,9 @@ def __genKeystrokesCode(event):
     keys = event['textValue']
     description = event['description']
     code = open('DynatraceSyntheticConverter/resources/conversionSnippets/keystrokes.txt').read() \
-        .replace('$SELECTOR', selector) \
+        .replace('$SELECTOR_TYPE', selector['selectorType']) \
+        .replace('$SELECTOR_STRING', selector['selectorString']) \
+        .replace('$SELECTOR_CODE', selector['selectorCode']) \
         .replace('$KEYS', keys) \
         .replace('$DESCRIPTION', description)
     return code
@@ -88,7 +90,9 @@ def __genClickCode(event):
     selector = __selectorFromLocators(locators)
     description = event['description']
     code = open('DynatraceSyntheticConverter/resources/conversionSnippets/click.txt').read() \
-        .replace('$SELECTOR', selector) \
+        .replace('$SELECTOR_TYPE', selector['selectorType']) \
+        .replace('$SELECTOR_STRING', selector['selectorString']) \
+        .replace('$SELECTOR_CODE', selector['selectorCode']) \
         .replace('$DESCRIPTION', description)
     return code
 
@@ -99,7 +103,9 @@ def __genSelectOptionCode(event):
     description = event['description']
     selections = event['selections'][0]['index']  # TODO: this'll not work for multi selects
     code = open('DynatraceSyntheticConverter/resources/conversionSnippets/selectOption.txt').read() \
-        .replace('$SELECTOR', selector) \
+        .replace('$SELECTOR_TYPE', selector['selectorType']) \
+        .replace('$SELECTOR_STRING', selector['selectorString']) \
+        .replace('$SELECTOR_CODE', selector['selectorCode']) \
         .replace('$DESCRIPTION', description) \
         .replace('$INDEX', str(selections))
     return code
@@ -124,7 +130,9 @@ def __genTextMatchCode(event):
             else:
                 code += open(
                     'DynatraceSyntheticConverter/resources/conversionSnippets/elementMatchFailIfNotFound.txt').read()
-            code = code.replace('$SELECTOR', selector)
+            code = code.replace('$SELECTOR_TYPE',  selector['selectorType']) \
+                .replace('$SELECTOR_STRING', selector['selectorString']) \
+                .replace('$SELECTOR_CODE', selector['selectorCode'])
     return code
 
 
@@ -133,7 +141,11 @@ def __selectorFromLocators(locators):
         next((locator for locator in locators if locator['type'] == 'css' and 'contains' not in locator['value']), None)
     if cssIdLocator is not None:
         cssID = cssIdLocator['value'].replace("\"", "\\\"")
-        return f'driver.find_element_by_css_selector("{cssID}")'
+        return {
+            'selectorType': 'By.CSS_SELECTOR',
+            'selectorString': cssID,
+            'selectorCode': f'driver.find_element_by_css_selector("{cssID}")'
+        }
 
     cssContainsLocator = \
         next((locator for locator in locators if locator['type'] == 'css' and 'contains' in locator['value']), None)
@@ -141,7 +153,11 @@ def __selectorFromLocators(locators):
         val = cssContainsLocator['value']
         content = re.search(r'\((.*)\)', val).group(1).replace("\"", "\\\"")
         tag = val.split(':')[0]
-        return f'driver.find_element_by_xpath("//{tag}[contains(text(), {content})]")'
+        return {
+            'selectorType': 'By.XPATH',
+            'selectorString': f"//{tag}[contains(text(), {content})]",
+            'selectorCode': f'driver.find_element_by_xpath("//{tag}[contains(text(), {content})]")'
+        }
 
     cssDomNameLocator = \
         next((locator for locator in locators if locator['type'] == 'dom' and 'getElementsByName' in locator['value']),
@@ -149,7 +165,12 @@ def __selectorFromLocators(locators):
     if cssDomNameLocator is not None:
         val = cssDomNameLocator['value']
         content = re.search(r'\((.*)\)', val).group(1)
-        return f'driver.find_element_by_name({content})'
+
+        return {
+            'selectorType': 'By.NAME',
+            'selectorString': content,
+            'selectorCode': f'driver.find_element_by_name({content})'
+        }
 
     return 'None  # TODO: locator found is ' + locators[0]["value"].replace("\"", "\\\"")
 
