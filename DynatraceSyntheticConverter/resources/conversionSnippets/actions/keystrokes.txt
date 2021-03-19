@@ -1,0 +1,7 @@
+        # $DESCRIPTION
+        self.send_keys(driver,
+                '$DESCRIPTION',
+                $SELECTOR_TYPE,
+                '$SELECTOR_STRING',
+                lambda: $SELECTOR_CODE,
+                '$KEYS')

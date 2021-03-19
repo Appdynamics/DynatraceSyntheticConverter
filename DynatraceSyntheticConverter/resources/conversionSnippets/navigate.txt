@@ -1,3 +1,0 @@
-        # $DESCRIPTION
-        print('$DESCRIPTION')
-        driver.get("$URL")

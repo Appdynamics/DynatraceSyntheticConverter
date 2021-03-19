@@ -8,6 +8,8 @@ import json
 from pathlib import Path
 import logging
 
+CONVERSION_SNIPPET_BASE = 'DynatraceSyntheticConverter/resources/conversionSnippets/'
+
 
 @command(
     name='generate',
@@ -28,7 +30,7 @@ def generate():
             logging.info(f'Converting {filename}')
 
             events = schema['events']
-            code = open('DynatraceSyntheticConverter/resources/conversionSnippets/base.txt').read()
+            code = open(CONVERSION_SNIPPET_BASE + 'base.txt').read()
             eventsCode = ''
 
             hasUnsupportedElements = False
@@ -64,7 +66,7 @@ def generate():
 def __genNavigateCode(event) -> str:
     url = event['url']
     description = event['description']
-    code = open('DynatraceSyntheticConverter/resources/conversionSnippets/navigate.txt').read() \
+    code = open(CONVERSION_SNIPPET_BASE + 'actions/navigate.txt').read() \
         .replace('$URL', url) \
         .replace('$DESCRIPTION', description)
     return code
@@ -76,7 +78,7 @@ def __genKeystrokesCode(event):
     selector = __selectorFromLocators(locators)
     keys = event['textValue']
     description = event['description']
-    code = open('DynatraceSyntheticConverter/resources/conversionSnippets/keystrokes.txt').read() \
+    code = open(CONVERSION_SNIPPET_BASE + 'actions/keystrokes.txt').read() \
         .replace('$SELECTOR_TYPE', selector['selectorType']) \
         .replace('$SELECTOR_STRING', selector['selectorString']) \
         .replace('$SELECTOR_CODE', selector['selectorCode']) \
@@ -89,7 +91,7 @@ def __genClickCode(event):
     locators = event['target']['locators']
     selector = __selectorFromLocators(locators)
     description = event['description']
-    code = open('DynatraceSyntheticConverter/resources/conversionSnippets/click.txt').read() \
+    code = open(CONVERSION_SNIPPET_BASE + 'actions/click.txt').read() \
         .replace('$SELECTOR_TYPE', selector['selectorType']) \
         .replace('$SELECTOR_STRING', selector['selectorString']) \
         .replace('$SELECTOR_CODE', selector['selectorCode']) \
@@ -102,7 +104,7 @@ def __genSelectOptionCode(event):
     selector = __selectorFromLocators(locators)
     description = event['description']
     selections = event['selections'][0]['index']  # TODO: this'll not work for multi selects
-    code = open('DynatraceSyntheticConverter/resources/conversionSnippets/selectOption.txt').read() \
+    code = open(CONVERSION_SNIPPET_BASE + 'actions/selectOption.txt').read() \
         .replace('$SELECTOR_TYPE', selector['selectorType']) \
         .replace('$SELECTOR_STRING', selector['selectorString']) \
         .replace('$SELECTOR_CODE', selector['selectorCode']) \
@@ -116,23 +118,29 @@ def __genTextMatchCode(event):
     for validator in event['validate']:
         if validator['type'] == 'content_match' or validator['type'] == 'text_match':
             if validator['failIfFound']:
-                code += open('DynatraceSyntheticConverter/resources/conversionSnippets/textMatchFailIfFound.txt').read()
+                code += open(CONVERSION_SNIPPET_BASE + 'validators/textMatchFailIfFound.txt').read()
             else:
-                code += open(
-                    'DynatraceSyntheticConverter/resources/conversionSnippets/textMatchFailIfNotFound.txt').read()
+                code += open(CONVERSION_SNIPPET_BASE + 'validators/textMatchFailIfNotFound.txt').read()
             code = code.replace('$TEXT', validator['match'])
         if validator['type'] == 'element_match':
             locators = validator['target']['locators']
             selector = __selectorFromLocators(locators)
             if validator['failIfFound']:
                 code += open(
-                    'DynatraceSyntheticConverter/resources/conversionSnippets/elementMatchFailIfFound.txt').read()
+                    CONVERSION_SNIPPET_BASE + 'validators/elementMatchFailIfFound.txt').read()
             else:
-                code += open(
-                    'DynatraceSyntheticConverter/resources/conversionSnippets/elementMatchFailIfNotFound.txt').read()
-            code = code.replace('$SELECTOR_TYPE',  selector['selectorType']) \
+                code += open(CONVERSION_SNIPPET_BASE + 'validators/elementMatchFailIfNotFound.txt').read()
+            code = code.replace('$SELECTOR_TYPE', selector['selectorType']) \
                 .replace('$SELECTOR_STRING', selector['selectorString']) \
                 .replace('$SELECTOR_CODE', selector['selectorCode'])
+    return code
+
+
+def __genJsCode(event):
+    description = event['description']
+    code = open(CONVERSION_SNIPPET_BASE + 'actions/jsCode.txt').read() \
+        .replace('$DESCRIPTION', description) \
+        .replace('$JS_CODE', event['javaScript'].replace('\n', '\t\t'))
     return code
 
 
@@ -173,11 +181,3 @@ def __selectorFromLocators(locators):
         }
 
     return 'None  # TODO: locator found is ' + locators[0]["value"].replace("\"", "\\\"")
-
-
-def __genJsCode(event):
-    description = event['description']
-    code = open('DynatraceSyntheticConverter/resources/conversionSnippets/jsCode.txt').read() \
-        .replace('$DESCRIPTION', description) \
-        .replace('$JS_CODE', event['javaScript'].replace('\n', '\t\t'))
-    return code

@@ -1,0 +1,6 @@
+        # $DESCRIPTION
+        self.click(driver,
+                '$DESCRIPTION',
+                $SELECTOR_TYPE,
+                '$SELECTOR_STRING',
+                lambda: $SELECTOR_CODE)

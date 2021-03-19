@@ -14,25 +14,72 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
 import unittest, time, re
+import logging
 
 
 class AppDynamicsJob(unittest.TestCase):
-    def setUp(self):
-        self.driver = webdriver.Chrome()
-        self.driver.implicitly_wait(30)
-
     def test_app_dynamics_job(self):
         driver = self.driver
-        driver_wait = WebDriverWait(driver, 30)
         driver.set_window_size(1920, 1080)
-        self.verificationErrors = []
+        driver.implicitly_wait(30)
+        self.driver_wait = WebDriverWait(driver, 30)
 
 # $EVENT_STEPS
 
-    def tearDown(self):
-        # To know more about the difference between verify and assert,
-        # visit https://www.seleniumhq.org/docs/06_test_design_considerations.jsp#validating-results
-        self.assertEqual([], self.verificationErrors)
+    def setUp(self):
+        self.driver = webdriver.Chrome()
+
+    ##### Helper Functions - Actions #####
+
+    def get_url(self, driver, description: str, url: str):
+        logging.info(description)
+        driver.get(url)
+
+    def click(self, driver, description: str, selector_type, selector_string: str, selector_code):
+        logging.info(description)
+        self.driver_wait.until(EC.visibility_of_element_located((selector_type, selector_string)))
+        element = selector_code()
+        driver.execute_script("arguments[0].scrollIntoView();", element)
+        driver.execute_script("arguments[0].click();", element)
+        return element
+
+    def send_keys(self, driver, description: str, selector_type, selector_string: str, selector_code, keys: str):
+        element = self.click(driver, description, selector_type, selector_string, selector_code)
+        driver.execute_script("arguments[0].innerHTML = \"\";", element)
+        element.send_keys(keys)
+
+    def select_option(self, driver, description: str, selector_type, selector_string: str, selector_code, index: int):
+        element = self.click(driver, description, selector_type, selector_string, selector_code)
+        Select(element).select_by_index(index)
+
+    ##### Helper Functions - Validators #####
+
+    def is_string_in_element(self, driver, needle: str, selector_type, selector_string: str):
+        self.driver_wait.until(EC.visibility_of_element_located((selector_type, selector_string)))
+        text = driver.find_element_by_tag_name(selector_string).text.lower()
+        return re.search(needle.lower(), text) is not None
+
+    def verify_string_in_page(self, driver, needle: str):
+        logging.info(f'Verifying {needle.lower()} is contained in the page.')
+        # TODO: need some intelligent wait here
+        self.assertTrue(self.is_string_in_element(driver, needle, By.TAG_NAME, "body"))
+
+    def verify_string_not_in_page(self, driver, needle: str):
+        logging.info(f'Verifying {needle.lower()} is not contained in the page.')
+        # TODO: need some intelligent wait here
+        self.assertFalse(self.is_string_in_element(driver, needle, By.TAG_NAME, "body"))
+
+    def verify_element_not_in_page(self, selector_type, selector_string: str, selector_code):
+        logging.info(f'Verifying "{selector_string}" does not exist.')
+        # TODO: need some intelligent wait here
+        element = selector_code()
+        self.assertIsNone(element)
+
+    def verify_element_in_page(self, selector_type, selector_string: str, selector_code):
+        logging.info(f'Verifying "{selector_string}" does not exist.')
+        self.driver_wait.until(EC.visibility_of_element_located((selector_type, selector_string)))
+        element = selector_code()
+        self.assertIsNotNone(element)
 
 
 if __name__ == "__main__":

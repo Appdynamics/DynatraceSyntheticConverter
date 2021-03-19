@@ -1,6 +1,0 @@
-        # $DESCRIPTION
-        print('$DESCRIPTION')
-        driver_wait.until(EC.visibility_of_element_located(($SELECTOR_TYPE, "$SELECTOR_STRING")))
-        element = $SELECTOR_CODE
-        driver.execute_script("arguments[0].scrollIntoView();", element)
-        driver.execute_script("arguments[0].click();", element)

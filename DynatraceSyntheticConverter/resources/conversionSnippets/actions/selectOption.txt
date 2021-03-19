@@ -1,0 +1,7 @@
+        # $DESCRIPTION
+        self.select_option(driver,
+                '$DESCRIPTION',
+                $SELECTOR_TYPE,
+                '$SELECTOR_STRING',
+                lambda: $SELECTOR_CODE,
+                $INDEX)

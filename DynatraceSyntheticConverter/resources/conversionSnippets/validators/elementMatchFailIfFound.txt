@@ -1,0 +1,4 @@
+        self.verify_element_not_in_page(
+                $SELECTOR_TYPE,
+                '$SELECTOR_STRING',
+                $SELECTOR_CODE)
