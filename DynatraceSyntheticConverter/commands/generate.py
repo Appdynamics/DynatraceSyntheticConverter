@@ -26,7 +26,7 @@ def generate():
     for file in glob.iglob('input/*.json'):
         filename = Path(file).stem
         schema = json.loads(open(file).read())
-        if schema['type'] == 'clickpath':
+        if schema['type'] == 'clickpath' or schema['type'] == 'availability':
             logging.info(f'Converting {filename}')
 
             events = schema['events']
