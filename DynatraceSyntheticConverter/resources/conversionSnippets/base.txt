@@ -29,7 +29,7 @@ class AppDynamicsJob(unittest.TestCase):
         self.positive_wait_time = 60
         # Wait time for ensuring an element DOES NOT exist.
         # Will ALWAYS wait this long before continuing when checking for non-existence of an element.
-        self.negative_wait_time = 1
+        self.negative_wait_time = 5
 
         # self.driver.implicitly_wait(self.positive_wait_time)
         self.positive_wait = WebDriverWait(self.driver, self.positive_wait_time)
