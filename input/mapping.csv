@@ -1,10 +1,4 @@
 jobName,eumApplicationId,browserCodes,locationCodes,timeoutSeconds,executionRateValue,executionRateUnit
---iri--IRIS-script,918,"Firefox,Chrome","SIC,LON",30,5,MINUTES
---api--Guest API-script,918,Firefox,"SAN",30,5,MINUTES
---grs--Admin Tool-script,918,Firefox,"SAN",30,5,MINUTES
---grs--Booking Tool-script,918,Firefox,"SAN",30,5,MINUTES
---hin--Concerto Hotel Interface-script,918,Firefox,"SAN",30,5,MINUTES
---iri--IRIS-script,918,Firefox,"SAN",30,5,MINUTES
---r03--Web - IHG_Rewards Club_Account_Management - No Tag-script,918,Firefox,"SAN",30,5,MINUTES
---rms--Revenue Management Service-script,918,Firefox,"SAN",30,5,MINUTES
---rsp--Web - IHG_Rewards Club_Guest_Reservation - No Tag-script,918,Firefox,"SAN",30,5,MINUTES
+Synthetic Job 1,918,"Firefox,Chrome","SIC,LON",30,5,MINUTES
+Synthetic Job 2,918,Firefox,"SAN",30,5,MINUTES
+Synthetic Job 3,918,Firefox,"SAN",30,5,MINUTES
