@@ -54,7 +54,7 @@ def generate():
             if hasUnsupportedElements:
                 logging.info(f'{filename} not fully converted, contains unsupported elements')
 
-            code = code.replace('# $EVENT_STEPS', eventsCode)
+            code = code.replace('# $EVENT_STEPS', eventsCode[:-1])
 
             with open(f'output/{Path(file).stem}.py', 'w') as outfile:
                 logging.debug(f'Saving {filename}')
@@ -81,7 +81,6 @@ def __genKeystrokesCode(event):
     code = open(CONVERSION_SNIPPET_BASE + 'actions/keystrokes.txt').read() \
         .replace('$SELECTOR_TYPE', selector['selectorType']) \
         .replace('$SELECTOR_STRING', selector['selectorString']) \
-        .replace('$SELECTOR_CODE', selector['selectorCode']) \
         .replace('$KEYS', keys) \
         .replace('$DESCRIPTION', description)
     return code
@@ -94,7 +93,6 @@ def __genClickCode(event):
     code = open(CONVERSION_SNIPPET_BASE + 'actions/click.txt').read() \
         .replace('$SELECTOR_TYPE', selector['selectorType']) \
         .replace('$SELECTOR_STRING', selector['selectorString']) \
-        .replace('$SELECTOR_CODE', selector['selectorCode']) \
         .replace('$DESCRIPTION', description)
     return code
 
@@ -107,7 +105,6 @@ def __genSelectOptionCode(event):
     code = open(CONVERSION_SNIPPET_BASE + 'actions/selectOption.txt').read() \
         .replace('$SELECTOR_TYPE', selector['selectorType']) \
         .replace('$SELECTOR_STRING', selector['selectorString']) \
-        .replace('$SELECTOR_CODE', selector['selectorCode']) \
         .replace('$DESCRIPTION', description) \
         .replace('$INDEX', str(selections))
     return code
@@ -131,8 +128,7 @@ def __genTextMatchCode(event):
             else:
                 code += open(CONVERSION_SNIPPET_BASE + 'validators/elementMatchFailIfNotFound.txt').read()
             code = code.replace('$SELECTOR_TYPE', selector['selectorType']) \
-                .replace('$SELECTOR_STRING', selector['selectorString']) \
-                .replace('$SELECTOR_CODE', selector['selectorCode'])
+                .replace('$SELECTOR_STRING', selector['selectorString'])
     return code
 
 
@@ -151,8 +147,7 @@ def __selectorFromLocators(locators):
         cssID = cssIdLocator['value'].replace("\"", "\\\"")
         return {
             'selectorType': 'By.CSS_SELECTOR',
-            'selectorString': cssID,
-            'selectorCode': f'driver.find_element_by_css_selector("{cssID}")'
+            'selectorString': cssID
         }
 
     cssContainsLocator = \
@@ -163,8 +158,7 @@ def __selectorFromLocators(locators):
         tag = val.split(':')[0]
         return {
             'selectorType': 'By.XPATH',
-            'selectorString': f"//{tag}[contains(text(), {content})]",
-            'selectorCode': f'driver.find_element_by_xpath("//{tag}[contains(text(), {content})]")'
+            'selectorString': f"//{tag}[contains(text(), {content})]"
         }
 
     cssDomNameLocator = \
@@ -176,8 +170,7 @@ def __selectorFromLocators(locators):
 
         return {
             'selectorType': 'By.NAME',
-            'selectorString': content,
-            'selectorCode': f'driver.find_element_by_name({content})'
+            'selectorString': content
         }
 
     return 'None  # TODO: locator found is ' + locators[0]["value"].replace("\"", "\\\"")

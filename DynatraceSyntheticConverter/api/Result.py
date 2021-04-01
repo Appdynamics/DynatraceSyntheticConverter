@@ -1,14 +1,16 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Generic, TypeVar, Optional
+
+T = TypeVar('T')
 
 
 @dataclass
-class Result:
-    """Basic implementation of  'Go-like' error handling"""
+class Result(Generic[T]):
+    """Basic implementation of 'Go-like' error handling"""
 
     @dataclass
     class Error:
         msg: str
 
-    data: Any
-    error: Error
+    data: T
+    error: Optional[Error]

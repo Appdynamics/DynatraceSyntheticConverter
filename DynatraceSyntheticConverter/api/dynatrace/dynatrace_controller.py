@@ -1,5 +1,4 @@
-from requests import Response
-from uplink import Consumer, get, params, error_handler, post, Path, Body
+from uplink import Consumer, get, params, error_handler, Path
 
 
 class ApiError(Exception):
@@ -22,5 +21,5 @@ class DynatraceController(Consumer):
 
     @params({"output": "json"})
     @get("/api/v1/synthetic/monitors/{monitorId}")
-    def get_synthetic_monitor(self, monitorId: Path):
+    def get_synthetic_monitor(self, monitorId: Path('monitorId')):
         """Retrieves info on specific synthetic monitor"""

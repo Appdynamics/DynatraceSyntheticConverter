@@ -1,84 +1,93 @@
-# -*- coding: utf-8 -*-
 '''yml
 requestHeader:
-  Custom-Header-AppD: "IHGAppDSynthetic/1.0"
+  Custom-Header-AppD: "AppDSynthetic"
 '''
+import logging
+import re
+import time
+import unittest
+from datetime import datetime, timedelta
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import Select
-from selenium.webdriver.support import wait
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import NoAlertPresentException
-import unittest, time, re
-import logging
 
 
 class AppDynamicsJob(unittest.TestCase):
     def test_app_dynamics_job(self):
-        driver = self.driver
-        driver.set_window_size(1920, 1080)
-        driver.implicitly_wait(30)
-        self.driver_wait = WebDriverWait(driver, 30)
-
 # $EVENT_STEPS
 
     def setUp(self):
+        # Driver defined here is unused by AppDynamics synthetics, for local testing only.
         self.driver = webdriver.Chrome()
+        # Variables defined below are used by AppDynamics synthetics.
+        # Dynatrace timeout default for finding elements is 1 minute.
+        self.time_to_wait = 60
+        self.driver.implicitly_wait(self.time_to_wait)
+        self.driver_wait = WebDriverWait(self.driver, self.time_to_wait)
 
     ##### Helper Functions - Actions #####
 
-    def get_url(self, driver, description: str, url: str):
+    def _get_url(self, description: str, url: str):
         logging.info(description)
-        driver.get(url)
+        self.driver.get(url)
 
-    def click(self, driver, description: str, selector_type, selector_string: str, selector_code):
+    def _click(self, description: str, selector_type: By, selector_string: str):
         logging.info(description)
-        self.driver_wait.until(EC.visibility_of_element_located((selector_type, selector_string)))
-        element = selector_code()
-        driver.execute_script("arguments[0].scrollIntoView();", element)
-        driver.execute_script("arguments[0].click();", element)
+        self.driver_wait.until(expected_conditions.visibility_of_element_located((selector_type, selector_string)))
+        element = self.driver.find_element(selector_type, selector_string)
+        self.driver.execute_script("arguments[0].scrollIntoView();", element)
+        self.driver.execute_script("arguments[0].click();", element)
         return element
 
-    def send_keys(self, driver, description: str, selector_type, selector_string: str, selector_code, keys: str):
-        element = self.click(driver, description, selector_type, selector_string, selector_code)
-        driver.execute_script("arguments[0].innerHTML = \"\";", element)
+    def _send_keys(self, description: str, selector_type: By, selector_string: str, keys: str):
+        element = self._click(description, selector_type, selector_string)
+        self.driver.execute_script("arguments[0].innerHTML = \"\";", element)
         element.send_keys(keys)
 
-    def select_option(self, driver, description: str, selector_type, selector_string: str, selector_code, index: int):
-        element = self.click(driver, description, selector_type, selector_string, selector_code)
+    def _select_option(self, description: str, selector_type: By, selector_string: str, index: int):
+        element = self._click(description, selector_type, selector_string)
         Select(element).select_by_index(index)
 
     ##### Helper Functions - Validators #####
 
-    def is_string_in_element(self, driver, needle: str, selector_type, selector_string: str):
-        self.driver_wait.until(EC.visibility_of_element_located((selector_type, selector_string)))
-        text = driver.find_element_by_tag_name(selector_string).text.lower()
-        return re.search(needle.lower(), text) is not None
+    def _is_string_in_element(self, needle: str, selector_type: By, selector_string: str):
+        self.driver_wait.until(expected_conditions.visibility_of_element_located((selector_type, selector_string)))
 
-    def verify_string_in_page(self, driver, needle: str):
+        start_time = datetime.now()
+        max_timeout_reached = False
+        found_needle = False
+        while not max_timeout_reached and not found_needle:
+            text = self.driver.find_element_by_tag_name(selector_string).text.lower()
+            found_needle = re.search(needle.lower(), text) is not None
+            elapsed = datetime.now() - start_time
+            if elapsed > timedelta(seconds=self.time_to_wait):
+                max_timeout_reached = True
+            else:
+                time.sleep(1)
+        return found_needle
+
+    def _verify_string_in_page(self, needle: str):
         logging.info(f'Verifying {needle.lower()} is contained in the page.')
-        # TODO: need some intelligent wait here
-        self.assertTrue(self.is_string_in_element(driver, needle, By.TAG_NAME, "body"))
+        self.assertTrue(self._is_string_in_element(needle, By.TAG_NAME, "body"))
 
-    def verify_string_not_in_page(self, driver, needle: str):
+    def _verify_string_not_in_page(self, needle: str):
         logging.info(f'Verifying {needle.lower()} is not contained in the page.')
-        # TODO: need some intelligent wait here
-        self.assertFalse(self.is_string_in_element(driver, needle, By.TAG_NAME, "body"))
+        # TODO: need smart wait
+        self.assertFalse(self._is_string_in_element(needle, By.TAG_NAME, "body"))
 
-    def verify_element_not_in_page(self, selector_type, selector_string: str, selector_code):
+    def _verify_element_not_in_page(self, selector_type: By, selector_string: str):
         logging.info(f'Verifying "{selector_string}" does not exist.')
-        # TODO: need some intelligent wait here
-        element = selector_code()
+        # TODO: need smart wait
+        element = self.driver.find_element(selector_type, selector_string) is not None
         self.assertIsNone(element)
 
-    def verify_element_in_page(self, selector_type, selector_string: str, selector_code):
+    def _verify_element_in_page(self, selector_type: By, selector_string: str):
         logging.info(f'Verifying "{selector_string}" does not exist.')
-        self.driver_wait.until(EC.visibility_of_element_located((selector_type, selector_string)))
-        element = selector_code()
+        self.driver_wait.until(expected_conditions.visibility_of_element_located((selector_type, selector_string)))
+        element = self.driver.find_element(selector_type, selector_string)
         self.assertIsNotNone(element)
 
 

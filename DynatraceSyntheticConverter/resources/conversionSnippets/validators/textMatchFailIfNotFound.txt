@@ -1,1 +1,1 @@
-        self.verify_string_in_page(driver, '$TEXT')
+        self._verify_string_in_page('$TEXT')

@@ -28,7 +28,7 @@ class AppdController(Consumer):
 
     @params({"output": "json"})
     @post("controller/restui/synthetic/schedule/{application_id}/updateSchedule")
-    def create_synthetic_job(self, application_id: Path, body: Body):
+    def create_synthetic_job(self, application_id: Path('application_id'), body: Body):
         """Creates/updates synthetic job"""
 
     @params({"output": "json"})

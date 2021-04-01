@@ -1,2 +1,2 @@
         # $DESCRIPTION
-        self.get_url(driver, '$DESCRIPTION', '$URL')
+        self._get_url('$DESCRIPTION', '$URL')
