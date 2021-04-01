@@ -54,6 +54,7 @@ def generate():
             if hasUnsupportedElements:
                 logging.info(f'{filename} not fully converted, contains unsupported elements')
 
+            # trim trailing newline when we append our events code
             code = code.replace('# $EVENT_STEPS', eventsCode[:-1])
 
             with open(f'output/{Path(file).stem}.py', 'w') as outfile:

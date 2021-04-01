@@ -4,13 +4,15 @@ requestHeader:
 '''
 import logging
 import re
+import sys
 import time
 import unittest
 from datetime import datetime, timedelta
 
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -22,11 +24,16 @@ class AppDynamicsJob(unittest.TestCase):
     def setUp(self):
         # Driver defined here is unused by AppDynamics synthetics, for local testing only.
         self.driver = webdriver.Chrome()
-        # Variables defined below are used by AppDynamics synthetics.
-        # Dynatrace timeout default for finding elements is 1 minute.
-        self.time_to_wait = 60
-        self.driver.implicitly_wait(self.time_to_wait)
-        self.driver_wait = WebDriverWait(self.driver, self.time_to_wait)
+        # Wait time for ensuring an element DOES exist.
+        # Will wait at most this time, if not found by then, then job fails.
+        self.positive_wait_time = 60
+        # Wait time for ensuring an element DOES NOT exist.
+        # Will ALWAYS wait this long before continuing when checking for non-existence of an element.
+        self.negative_wait_time = 1
+
+        # self.driver.implicitly_wait(self.positive_wait_time)
+        self.positive_wait = WebDriverWait(self.driver, self.positive_wait_time)
+        self.negative_wait = WebDriverWait(self.driver, self.negative_wait_time)
 
     ##### Helper Functions - Actions #####
 
@@ -36,7 +43,8 @@ class AppDynamicsJob(unittest.TestCase):
 
     def _click(self, description: str, selector_type: By, selector_string: str):
         logging.info(description)
-        self.driver_wait.until(expected_conditions.visibility_of_element_located((selector_type, selector_string)))
+        self.positive_wait.until(EC.element_to_be_clickable((selector_type, selector_string)))
+        self.positive_wait.until(EC.visibility_of_element_located((selector_type, selector_string)))
         element = self.driver.find_element(selector_type, selector_string)
         self.driver.execute_script("arguments[0].scrollIntoView();", element)
         self.driver.execute_script("arguments[0].click();", element)
@@ -53,8 +61,15 @@ class AppDynamicsJob(unittest.TestCase):
 
     ##### Helper Functions - Validators #####
 
-    def _is_string_in_element(self, needle: str, selector_type: By, selector_string: str):
-        self.driver_wait.until(expected_conditions.visibility_of_element_located((selector_type, selector_string)))
+    def _is_string_in_element(self, needle: str, selector_type: By, selector_string: str, positive_check=True):
+        if positive_check:
+            wait = self.positive_wait
+            wait_time = self.positive_wait_time
+        else:
+            wait = self.negative_wait
+            wait_time = self.negative_wait_time
+
+        wait.until(EC.visibility_of_element_located((selector_type, selector_string)))
 
         start_time = datetime.now()
         max_timeout_reached = False
@@ -63,7 +78,7 @@ class AppDynamicsJob(unittest.TestCase):
             text = self.driver.find_element_by_tag_name(selector_string).text.lower()
             found_needle = re.search(needle.lower(), text) is not None
             elapsed = datetime.now() - start_time
-            if elapsed > timedelta(seconds=self.time_to_wait):
+            if elapsed > timedelta(seconds=wait_time):
                 max_timeout_reached = True
             else:
                 time.sleep(1)
@@ -75,21 +90,20 @@ class AppDynamicsJob(unittest.TestCase):
 
     def _verify_string_not_in_page(self, needle: str):
         logging.info(f'Verifying {needle.lower()} is not contained in the page.')
-        # TODO: need smart wait
-        self.assertFalse(self._is_string_in_element(needle, By.TAG_NAME, "body"))
-
-    def _verify_element_not_in_page(self, selector_type: By, selector_string: str):
-        logging.info(f'Verifying "{selector_string}" does not exist.')
-        # TODO: need smart wait
-        element = self.driver.find_element(selector_type, selector_string) is not None
-        self.assertIsNone(element)
+        self.assertFalse(self._is_string_in_element(needle, By.TAG_NAME, "body", positive_check=False))
 
     def _verify_element_in_page(self, selector_type: By, selector_string: str):
-        logging.info(f'Verifying "{selector_string}" does not exist.')
-        self.driver_wait.until(expected_conditions.visibility_of_element_located((selector_type, selector_string)))
+        logging.info(f'Verifying "{selector_string}" exists.')
+        self.positive_wait.until(EC.visibility_of_element_located((selector_type, selector_string)))
         element = self.driver.find_element(selector_type, selector_string)
         self.assertIsNotNone(element)
 
+    def _verify_element_not_in_page(self, selector_type: By, selector_string: str):
+        logging.info(f'Verifying "{selector_string}" does not exist.')
+        with self.assertRaises(TimeoutException):
+            self.negative_wait.until(EC.visibility_of_element_located((selector_type, selector_string)))
+
 
 if __name__ == "__main__":
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     unittest.main()
