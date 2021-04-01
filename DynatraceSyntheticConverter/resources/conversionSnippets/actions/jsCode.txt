@@ -1,5 +1,5 @@
         # $DESCRIPTION
         logging.info('$DESCRIPTION')
-        driver.execute_script("""
+        self.driver.execute_script("""
         $JS_CODE
         """)
