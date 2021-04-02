@@ -26,6 +26,14 @@ def generate():
     for file in glob.iglob('input/*.json'):
         filename = Path(file).stem
         schema = json.loads(open(file).read())
+
+        # if file is the complete synthetic config taken from API, not just downloaded script
+        if 'script' in schema:
+            schema = schema['script']
+
+        if 'configuration' not in schema or 'events' not in schema:
+            continue
+
         if schema['type'] == 'clickpath' or schema['type'] == 'availability':
             logging.info(f'Converting {filename}')
 
