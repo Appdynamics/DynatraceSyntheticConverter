@@ -153,7 +153,7 @@ def __selectorFromLocators(locators):
     cssIdLocator = \
         next((locator for locator in locators if locator['type'] == 'css' and 'contains' not in locator['value']), None)
     if cssIdLocator is not None:
-        cssID = cssIdLocator['value'].replace("\"", "\\\"")
+        cssID = cssIdLocator['value'].replace("\"", "\\\"").replace('\'', '')
         return {
             'selectorType': 'By.CSS_SELECTOR',
             'selectorString': cssID
@@ -162,7 +162,7 @@ def __selectorFromLocators(locators):
     cssContainsLocator = \
         next((locator for locator in locators if locator['type'] == 'css' and 'contains' in locator['value']), None)
     if cssContainsLocator is not None:
-        val = cssContainsLocator['value']
+        val = cssContainsLocator['value'].replace('\'', '')
         content = re.search(r'\((.*)\)', val).group(1).replace("\"", "\\\"")
         tag = val.split(':')[0]
         return {
@@ -170,16 +170,47 @@ def __selectorFromLocators(locators):
             'selectorString': f"//{tag}[contains(text(), {content})]"
         }
 
-    cssDomNameLocator = \
-        next((locator for locator in locators if locator['type'] == 'dom' and 'getElementsByName' in locator['value']),
-             None)
-    if cssDomNameLocator is not None:
-        val = cssDomNameLocator['value']
-        content = re.search(r'\((.*)\)', val).group(1)
+    if next((locator for locator in locators if locator['type'] == 'dom'), None) is not None:
+        if (locator := next((locator for locator in locators if 'getElementsByName' in locator['value']), None)) is not None:
+            val = locator['value'].replace('\'', '')
+            content = re.search(r'\((.*)\)', val).group(1)
+            return {
+                'selectorType': 'By.NAME',
+                'selectorString': content
+            }
 
-        return {
-            'selectorType': 'By.NAME',
-            'selectorString': content
-        }
+        if (locator := next((locator for locator in locators if 'querySelector' in locator['value']), None)) is not None:
+            val = locator['value'].replace('\'', '')
+            content = re.search(r'\((.*)\)', val).group(1)
+            return {
+                'selectorType': 'By.CSS_SELECTOR',
+                'selectorString': content
+            }
+
+        if (locator := next((locator for locator in locators if 'getElementsByClassName' in locator['value']), None)) is not None:
+            val = locator['value'].replace('\'', '')
+            content = re.search(r'\((.*)\)', val).group(1)
+            return {
+                'selectorType': 'By.CLASS_NAME',
+                'selectorString': content
+            }
+
+        if (locator := next((locator for locator in locators if 'getElementsByName' in locator['value']), None)) is not None:
+            val = locator['value'].replace('\'', '')
+            content = re.search(r'\((.*)\)', val).group(1)
+            return {
+                'selectorType': 'By.NAME',
+                'selectorString': content
+            }
+
+        if (locator := next((locator for locator in locators if 'getElementById' in locator['value']), None)) is not None:
+            val = locator['value'].replace('\'', '')
+            content = re.search(r'\((.*)\)', val).group(1)
+            return {
+                'selectorType': 'By.ID',
+                'selectorString': content
+            }
+
+
 
     return 'None  # TODO: locator found is ' + locators[0]["value"].replace("\"", "\\\"")
